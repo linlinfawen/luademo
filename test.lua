@@ -1,11 +1,11 @@
--- MMData = require("MMDataManager")
--- print(MMData)
--- for k,v in pairs(MMData) do
--- 	print(k,v)
--- end
--- print("+++++++++++")
--- for k,v in pairs(getmetatable(MMData)) do
--- 	print(k,v)
+MMData = require("MMDataManager")
+print(MMData)
+for k,v in pairs(MMData) do
+	print(k,v)
+end
+print("+++++++++++")
+for k,v in pairs(getmetatable(MMData)) do
+	print(k,v)
 -- end
 
 -- print("-----")

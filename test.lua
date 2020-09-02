@@ -1,12 +1,12 @@
-MMData = require("MMDataManager")
-print(MMData)
-for k,v in pairs(MMData) do
-	print(k,v)
-end
-print("+++++++++++")
-for k,v in pairs(getmetatable(MMData)) do
-	print(k,v)
+-- MMData = require("MMDataManager")
+-- print(MMData)
+-- for k,v in pairs(MMData) do
+-- 	print(k,v)
 -- end
+-- print("+++++++++++")
+-- for k,v in pairs(getmetatable(MMData)) do
+-- 	print(k,v)
+-- -- end
 
 -- print("-----")
 -- local instance = setmetatable(MMData, {})
@@ -69,17 +69,17 @@ for k,v in pairs(getmetatable(MMData)) do
 -- print(collectgarbage("count"))
 
 
-mm = {}
+-- mm = {}
 
-mm.t = {onTouch = function()
-	print("onTouch")
-end}
+-- mm.t = {onTouch = function()
+-- 	print("onTouch")
+-- end}
 
-if mm then
-	error("map config error ccbName: ")
-end
+-- if mm then
+-- 	error("map config error ccbName: ")
+-- end
 
-print(mm.t.onTouch)
+-- print(mm.t.onTouch)
 
 
 -- function mm:a( )
@@ -100,5 +100,5 @@ print(mm.t.onTouch)
 
 -- print(string.byte("DefenseAI",1))
 
-
+local t = {1=1,2=2,}
 

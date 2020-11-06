@@ -98,7 +98,21 @@
 
 -- print(mm["a"])
 
--- print(string.byte("DefenseAI",1))
+-- -- print(string.byte("DefenseAI",1))
 
-local t = {1=1,2=2,}
+-- local t = {1,2,3}
+
+-- function show( )
+-- 	-- body
+-- 	print(6666666)
+-- end
+module("test123",package.seeall)
+
+function show( ... )
+	-- body
+	print("show")
+end
+
+
+
 

@@ -622,18 +622,60 @@
 
 -- print(table.nums({nil,nil,1}))
 
--- t1 = {name = "www"}
--- print(t1)
--- t2 = {}
-
--- t1.__index = t1
-
--- setmetatable(t2, t1)
--- t1.__call = function( ... )
--- 	print("call")
+-- t0 = {name = "www"}
+-- function t0:show() 
+-- 	print("t0:show")
 -- end
--- -- t2.__index = t1
--- print(getmetatable(t2))
+
+-- t1 = {name = "www"
+-- }function t1:show() 
+-- 	print("t1:show")
+-- end
+-- print("t1==",t1)
+
+-- t2 = {}
+-- t2.super = t1
+-- t2.super0 = t0
+
+-- t2.__index = t2
+
+-- setmetatable(t2, {__index = t2.super})
+
+-- print("t2==",t2)
+-- -- t1.__call = function( ... )
+-- -- 	print("call")
+-- -- end
+-- -- -- t2.__index = t1
+-- print("------------getmetatable--------------------")
+-- -- print(getmetatable(t2))
+-- for k,v in pairs(getmetatable(t2)) do
+-- 	print(k,v)
+-- end
+
+-- t2:show()
+
+
+-- for k,v in pairs(getmetatable(cell)) do
+--             print(k,v)
+--         end
+
+
+-- t3 = {}
+-- t2.__index = t2
+-- setmetatable(t3, t2)
+-- t3:show()
+
+-- print("------------t3 getmetatable--------------------")
+-- print(getmetatable(t3))
+-- for k,v in pairs(getmetatable(t3)) do
+-- 	print(k,v)
+-- end
+
+
+-- print("------------getmetatable __index--------------------")
+-- for k,v in pairs(getmetatable(t2).__index) do
+-- 	print(k,v)
+-- end
 -- print(t2.name)
 -- print(t2)
 -- print(t2())
@@ -826,8 +868,9 @@
 
 
 -- -- module("module123",package.seeall)  
--- -- 
--- require "test"
+-- -- -- 
+-- local x,y = require "test"
+-- print(x,y)
 
 -- -- show()
 
@@ -837,33 +880,327 @@
 
 -- for k,v in pairs(package.loaded.test123) do
 -- 	print(k,v)
+-- -- end
+-- list_node = {}
+-- function list_node:new(object)
+--   object = object or {}
+--   setmetatable(object, self)
+--   self.__index = self
+--   return object
 -- end
-list_node = {}
-function list_node:new(object)
-  object = object or {}
-  setmetatable(object, self)
-  self.__index = self
-  return object
+
+-- function list_node:dump(object)
+-- 	print("object==",object)
+-- end
+
+-- tempList = {}
+
+-- function tempList:dump1(object)
+-- 	print("object1==",object)
+-- end
+
+
+-- local list = list_node:new(tempList)
+-- list:dump("object")
+-- list:dump1("object1")
+
+
+
+-- local x = true
+
+-- if x then
+-- 	print("x=",x)
+-- end
+-- print(string.len("s") > 0 and "sssss" or "")
+-- local x = 1
+-- print(string.format("Alliance_R%d.png", x))
+
+local setmetatableindex_
+setmetatableindex_ = function(t, index)
+    if type(t) == "userdata" then
+        local peer = tolua.getpeer(t)
+        if not peer then
+            peer = {}
+            tolua.setpeer(t, peer)
+        end
+        setmetatableindex_(peer, index)
+    else
+        local mt = getmetatable(t)
+        if not mt then mt = {} end
+        if not mt.__index then
+            mt.__index = index
+            setmetatable(t, mt)
+        elseif mt.__index ~= index then
+            setmetatableindex_(mt, index)
+        end
+    end
+end
+setmetatableindex = setmetatableindex_
+
+
+
+
+function class(classname, ...)
+	print("classclassclassclassclassclassclassclass")
+    local cls = {__cname = classname}
+
+    local supers = {...}
+     print("supers =",supers)
+    for _, super in ipairs(supers) do
+        local superType = type(super)
+        print("superType =",superType)
+        assert(superType == "nil" or superType == "table" or superType == "function",
+            string.format("class() - create class \"%s\" with invalid super class type \"%s\"",
+                classname, superType))
+
+        if superType == "function" then
+            assert(cls.__create == nil,
+                string.format("class() - create class \"%s\" with more than one creating function",
+                    classname));
+            -- if super is function, set it to __create
+            cls.__create = super
+        elseif superType == "table" then
+            if super[".isclass"] then
+                -- super is native class
+                assert(cls.__create == nil,
+                    string.format("class() - create class \"%s\" with more than one creating function or native class",
+                        classname));
+                cls.__create = function() return super:create() end
+            else
+                -- super is pure lua class
+                cls.__supers = cls.__supers or {}
+                cls.__supers[#cls.__supers + 1] = super
+                if not cls.super then
+                    -- set first super pure lua class as class.super
+                    cls.super = super
+                end
+            end
+        else
+            error(string.format("class() - create class \"%s\" with invalid super type",
+                        classname), 0)
+        end
+    end
+
+    cls.__index = cls
+    print("cls.__index=",cls)
+    if not cls.__supers or #cls.__supers == 1 then
+    	print("cls.super=",cls.super)
+        setmetatable(cls, {__index = cls.super})
+    else
+    	print("__index = function")
+        setmetatable(cls, {__index = function(_, key)
+            local supers = cls.__supers
+            for i = 1, #supers do
+                local super = supers[i]
+                if super[key] then return super[key] end
+            end
+        end})
+    end
+
+    if not cls.ctor then
+        -- add default constructor
+        cls.ctor = function() end
+    end
+    cls.new = function(...)
+        local instance
+        if cls.__create then
+        	print("cls.__create")
+            instance = cls.__create(...)
+        else
+        	print("instance = {}")
+            instance = {}
+        end
+        setmetatableindex(instance, cls)
+        instance.class = cls
+        if not instance.super then
+            instance.super = getmetatable(instance)
+        end
+        print("instance ==",instance)
+        instance:ctor(...)
+        return instance
+    end
+    cls.create = function(_, ...)
+        return cls.new(...)
+    end
+    print("return cls =",cls)
+    return cls
 end
 
-function list_node:dump(object)
-	print("object==",object)
+
+-- ControllerBase = class("ControllerBase")
+-- print("ControllerBase==",ControllerBase)
+
+-- -- print("------------------- pairs(ControllerBase)-------------------")
+-- -- for k,v in pairs(ControllerBase) do
+-- -- 	print(k,v)
+-- -- end
+-- -- print("------------------- pairs(ControllerBase)-------------------")
+-- -- print("ControllerBase==",ControllerBase)
+-- function ControllerBase:ctor()
+-- 	print("ControllerBase:baseCtor")
+-- 	self:addPurgeDataCallBack()
+-- end
+
+-- function ControllerBase:addPurgeDataCallBack()
+-- 	print("self.purgeData==",self.purgeData)
+-- 	-- print("ControllerBase:addPurgeDataCallBack")
+-- end
+
+-- print("ControllerBase.addPurgeDataCallBack= ",ControllerBase.addPurgeDataCallBack)
+
+-- print("---------------------------ActivityRescueController---------------------------------------")
+-- print("")
+
+-- print("")
+-- print("")
+-- print("")
+-- print("")
+-- ActivityRescueController = class("ActivityRescueController",ControllerBase)
+
+-- print("ActivityRescueController  ==",ActivityRescueController)
+-- -- local _instance = nil
+
+-- function ActivityRescueController:getInstance()
+--     if not _instance then
+--         _instance = ActivityRescueController:new()
+--     end
+--     return _instance
+-- end
+-- function ActivityRescueController:ctor()
+-- 	print("ActivityRescueController:ctor")
+-- 	self.super:ctor()
+-- 	print("self.super == ",self.super)
+--     self.m_activityInfo = nil
+-- end
+-- print("ActivityRescueController==",ActivityRescueController)
+
+-- function ActivityRescueController:purgeData()
+ 
+-- end
+
+-- local arc = ActivityRescueController:getInstance()
+
+-- -- -- arc:baseCtor()
+-- -- -- print(getmetatable(arc).baseCtor)
+-- print("arc ====",arc)
+-- print("getmetatable.__index=",getmetatable(arc).__index)
+
+-- print("------------------- getmetatable(arc) __index-------------------")
+-- for k,v in pairs(getmetatable(arc).__index.__index) do
+-- 	print(k,v)
+-- end
+-- print("------------------- getmetatable(arc)-------------------")
+
+-- print("arc:addPurgeDataCallBack=",arc.addPurgeDataCallBack)
+-- arc:addPurgeDataCallBack()
+-- for k,v in pairs(getmetatable(arc)) do
+-- 	print(k,v)
+-- end
+-- print("ActivityRescueController=",arc)
+
+-- print("---------------arc-----------------------")
+-- for k,v in pairs(arc) do
+-- 	print(k,v)
+-- end
+
+-- getmetatable(arc).__index:addPurgeDataCallBack()
+
+
+-- print("\n\n\n\n")
+
+
+-- print("------------------- getmetatable(arc) __index-------------------")
+-- for k,v in pairs(getmetatable(arc).__index.__index.__index) do
+-- 	print(k,v)
+-- end
+-- print("------------------- getmetatable(arc)-------------------")
+
+-- function handler(obj, method)
+--     return function(...)
+--         return method(obj, ...)
+--     end
+-- end
+
+
+-- RankListInfoShared = class("RankListInfo")
+-- print("RankListInfoShared == ",RankListInfoShared)
+-- -- RankListInfoShared.__call = function ()
+	
+-- -- 	print("__call")
+-- --     if RankListInfoShared.rankListInfo then
+        
+-- --     end
+-- -- end
+
+-- setmetatable(RankListInfoShared, {__index = RankListInfoShared})
+
+-- local function function_name( ... )
+-- 	-- body
+-- end
+
+
+
+-- getmetatable(RankListInfoShared).__call = handler(RankListInfoShared,function (shared)
+-- 	local cs = {...}
+
+-- 	for k,v in pairs(cs) do
+-- 		print(k,v)
+-- 	end
+-- 	-- body
+-- 	-- if self.rankListInfo == nil then
+-- 	-- 	--todo
+-- 	-- 	self.rankListInfo = 12
+-- 	-- end
+
+-- 	-- return self.rankListInfo
+-- end)
+
+-- RankListInfoSharedTemp = {}
+
+-- function RankListInfoSharedTemp:initInfo()
+-- 	if self.rankListInfo == nil then
+-- 		--todo
+-- 		self.rankListInfo = 12
+-- 	end
+
+-- 	return self.rankListInfo
+
+-- end
+
+-- function RankListInfoSharedTemp:initShared( )
+-- 	-- body
+-- 	getmetatable(RankListInfoShared).__call = handler(self, RankListInfoSharedTemp.initInfo)
+-- end
+
+
+
+
+
+-- -- print(getmetatable(RankListInfoShared))
+
+-- -- print(RankListInfoShared())
+-- -- RankListInfoSharedTemp:initShared()
+-- -- print(RankListInfoShared())
+
+-- local x = 1
+
+-- print(x>1 and 1 or 2)
+
+
+local RewardViewType = {
+    RewardViewRank = 1;  --阶段排名奖励
+    RewardViewTotalRank = 2;  --最强指挥官奖励.
+    RewardViewServerRank = 3;  --家园阶段阶段奖励
+    RewardViewServerTotalRank = 4;  --家园阶段阶段奖励
+    RewardViewTypeTotal = 5;
+    RewardViewTypeRescue = 6;
+}
+
+print(RewardViewType.RewardViewTypeRescue)
+
+for i,v in pairs(RewardViewType) do
+	print(i,v)
 end
-
-tempList = {}
-
-function tempList:dump1(object)
-	print("object1==",object)
-end
-
-
-local list = list_node:new(tempList)
-list:dump("object")
-list:dump1("object1")
-
-
-
-
 
 
 

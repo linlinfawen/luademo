@@ -105,14 +105,15 @@
 -- function show( )
 -- 	-- body
 -- 	print(6666666)
+-- -- end
+-- module("test123",package.seeall)
+
+-- function show( ... )
+-- 	-- body
+-- 	print("show")
 -- end
-module("test123",package.seeall)
-
-function show( ... )
-	-- body
-	print("show")
-end
-
+print("1,2")
+return 1,2
 
 
 

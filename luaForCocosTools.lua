@@ -915,116 +915,116 @@
 -- local x = 1
 -- print(string.format("Alliance_R%d.png", x))
 
-local setmetatableindex_
-setmetatableindex_ = function(t, index)
-    if type(t) == "userdata" then
-        local peer = tolua.getpeer(t)
-        if not peer then
-            peer = {}
-            tolua.setpeer(t, peer)
-        end
-        setmetatableindex_(peer, index)
-    else
-        local mt = getmetatable(t)
-        if not mt then mt = {} end
-        if not mt.__index then
-            mt.__index = index
-            setmetatable(t, mt)
-        elseif mt.__index ~= index then
-            setmetatableindex_(mt, index)
-        end
-    end
-end
-setmetatableindex = setmetatableindex_
+-- local setmetatableindex_
+-- setmetatableindex_ = function(t, index)
+--     if type(t) == "userdata" then
+--         local peer = tolua.getpeer(t)
+--         if not peer then
+--             peer = {}
+--             tolua.setpeer(t, peer)
+--         end
+--         setmetatableindex_(peer, index)
+--     else
+--         local mt = getmetatable(t)
+--         if not mt then mt = {} end
+--         if not mt.__index then
+--             mt.__index = index
+--             setmetatable(t, mt)
+--         elseif mt.__index ~= index then
+--             setmetatableindex_(mt, index)
+--         end
+--     end
+-- end
+-- setmetatableindex = setmetatableindex_
 
 
 
 
-function class(classname, ...)
-	print("classclassclassclassclassclassclassclass")
-    local cls = {__cname = classname}
+-- function class(classname, ...)
+-- 	print("classclassclassclassclassclassclassclass")
+--     local cls = {__cname = classname}
 
-    local supers = {...}
-     print("supers =",supers)
-    for _, super in ipairs(supers) do
-        local superType = type(super)
-        print("superType =",superType)
-        assert(superType == "nil" or superType == "table" or superType == "function",
-            string.format("class() - create class \"%s\" with invalid super class type \"%s\"",
-                classname, superType))
+--     local supers = {...}
+--      print("supers =",supers)
+--     for _, super in ipairs(supers) do
+--         local superType = type(super)
+--         print("superType =",superType)
+--         assert(superType == "nil" or superType == "table" or superType == "function",
+--             string.format("class() - create class \"%s\" with invalid super class type \"%s\"",
+--                 classname, superType))
 
-        if superType == "function" then
-            assert(cls.__create == nil,
-                string.format("class() - create class \"%s\" with more than one creating function",
-                    classname));
-            -- if super is function, set it to __create
-            cls.__create = super
-        elseif superType == "table" then
-            if super[".isclass"] then
-                -- super is native class
-                assert(cls.__create == nil,
-                    string.format("class() - create class \"%s\" with more than one creating function or native class",
-                        classname));
-                cls.__create = function() return super:create() end
-            else
-                -- super is pure lua class
-                cls.__supers = cls.__supers or {}
-                cls.__supers[#cls.__supers + 1] = super
-                if not cls.super then
-                    -- set first super pure lua class as class.super
-                    cls.super = super
-                end
-            end
-        else
-            error(string.format("class() - create class \"%s\" with invalid super type",
-                        classname), 0)
-        end
-    end
+--         if superType == "function" then
+--             assert(cls.__create == nil,
+--                 string.format("class() - create class \"%s\" with more than one creating function",
+--                     classname));
+--             -- if super is function, set it to __create
+--             cls.__create = super
+--         elseif superType == "table" then
+--             if super[".isclass"] then
+--                 -- super is native class
+--                 assert(cls.__create == nil,
+--                     string.format("class() - create class \"%s\" with more than one creating function or native class",
+--                         classname));
+--                 cls.__create = function() return super:create() end
+--             else
+--                 -- super is pure lua class
+--                 cls.__supers = cls.__supers or {}
+--                 cls.__supers[#cls.__supers + 1] = super
+--                 if not cls.super then
+--                     -- set first super pure lua class as class.super
+--                     cls.super = super
+--                 end
+--             end
+--         else
+--             error(string.format("class() - create class \"%s\" with invalid super type",
+--                         classname), 0)
+--         end
+--     end
 
-    cls.__index = cls
-    print("cls.__index=",cls)
-    if not cls.__supers or #cls.__supers == 1 then
-    	print("cls.super=",cls.super)
-        setmetatable(cls, {__index = cls.super})
-    else
-    	print("__index = function")
-        setmetatable(cls, {__index = function(_, key)
-            local supers = cls.__supers
-            for i = 1, #supers do
-                local super = supers[i]
-                if super[key] then return super[key] end
-            end
-        end})
-    end
+--     cls.__index = cls
+--     print("cls.__index=",cls)
+--     if not cls.__supers or #cls.__supers == 1 then
+--     	print("cls.super=",cls.super)
+--         setmetatable(cls, {__index = cls.super})
+--     else
+--     	print("__index = function")
+--         setmetatable(cls, {__index = function(_, key)
+--             local supers = cls.__supers
+--             for i = 1, #supers do
+--                 local super = supers[i]
+--                 if super[key] then return super[key] end
+--             end
+--         end})
+--     end
 
-    if not cls.ctor then
-        -- add default constructor
-        cls.ctor = function() end
-    end
-    cls.new = function(...)
-        local instance
-        if cls.__create then
-        	print("cls.__create")
-            instance = cls.__create(...)
-        else
-        	print("instance = {}")
-            instance = {}
-        end
-        setmetatableindex(instance, cls)
-        instance.class = cls
-        if not instance.super then
-            instance.super = getmetatable(instance)
-        end
-        print("instance ==",instance)
-        instance:ctor(...)
-        return instance
-    end
-    cls.create = function(_, ...)
-        return cls.new(...)
-    end
-    print("return cls =",cls)
-    return cls
-end
+--     if not cls.ctor then
+--         -- add default constructor
+--         cls.ctor = function() end
+--     end
+--     cls.new = function(...)
+--         local instance
+--         if cls.__create then
+--         	print("cls.__create")
+--             instance = cls.__create(...)
+--         else
+--         	print("instance = {}")
+--             instance = {}
+--         end
+--         setmetatableindex(instance, cls)
+--         instance.class = cls
+--         if not instance.super then
+--             instance.super = getmetatable(instance)
+--         end
+--         print("instance ==",instance)
+--         instance:ctor(...)
+--         return instance
+--     end
+--     cls.create = function(_, ...)
+--         return cls.new(...)
+--     end
+--     print("return cls =",cls)
+--     return cls
+-- end
 
 
 -- ControllerBase = class("ControllerBase")
@@ -1187,20 +1187,475 @@ end
 -- print(x>1 and 1 or 2)
 
 
-local RewardViewType = {
-    RewardViewRank = 1;  --阶段排名奖励
-    RewardViewTotalRank = 2;  --最强指挥官奖励.
-    RewardViewServerRank = 3;  --家园阶段阶段奖励
-    RewardViewServerTotalRank = 4;  --家园阶段阶段奖励
-    RewardViewTypeTotal = 5;
-    RewardViewTypeRescue = 6;
-}
+-- local RewardViewType = {
+--     RewardViewRank = 1;  --阶段排名奖励
+--     RewardViewTotalRank = 2;  --最强指挥官奖励.
+--     RewardViewServerRank = 3;  --家园阶段阶段奖励
+--     RewardViewServerTotalRank = 4;  --家园阶段阶段奖励
+--     RewardViewTypeTotal = 5;
+--     RewardViewTypeRescue = 6;
+-- }
 
-print(RewardViewType.RewardViewTypeRescue)
+-- print(RewardViewType.RewardViewTypeRescue)
 
-for i,v in pairs(RewardViewType) do
-	print(i,v)
+-- for i,v in pairs(RewardViewType) do
+-- 	print(i,v)
+-- end
+
+-- local function add(a,b)
+--    assert(type(a) == "number", "a 不是一个数字")
+--    assert(type(b) == "number", "b 不是一个数字")
+--    return a+b
+-- end
+-- add(10)
+-- local i = 33
+
+-- pcall(function(i) print(i) error('error..') end, 33)
+
+-- function foo(id)
+-- 	-- body
+-- 	if id == nil then
+-- 		--todo
+-- 		error('id == nil',id)
+-- 	end
+
+-- 	print(id)
+
+-- end
+
+-- pcall(foo())
+-- COCOS2D_DEBUG = 1
+-- -- 调试包配置
+-- if COCOS2D_DEBUG and COCOS2D_DEBUG > 0 then
+--     LUA_DEBUG_LOG = 1
+--     LUA_DEBUG_REQUIRE = 1
+--     _print = print
+--     _buglyReportLuaException = function() end
+-- end
+
+-- __G__TRACKBACK__ = function(msg)
+-- 	print("__G__TRACKBACK__")
+--     local msg = debug.traceback(msg, 2)
+--     _print(msg)
+--     _buglyReportLuaException(tostring(msg), debug.traceback()) 
+--     debugXpCall()
+--     if isInnerVersion() or LUA_SHOW_ERRORBOX then
+--         require("view.common.ErrorMsgBox"):showMsgBox("LUA错误", tostring(msg) .. "\n" .. debug.traceback())
+--     end
+--     return msg
+-- end
+
+ -- pcall(error("1111"));
+
+ -- function test()
+ --        local i=0
+ --        return function()
+ --            i = i + 1
+ --            print("i == ",i)
+ --        end
+ --    end
+
+
+ --    local func = test()
+
+ --    func()
+ --    func()
+ --    func()
+ --    func()
+ --    func()
+ --    func()
+
+
+--  function secondsToTime(ts)
+
+--     local seconds = math.mod(ts, 60)
+--     local min = math.floor(ts/60)
+--     local hour = math.floor(min/60) 
+--     local day = math.floor(hour/24)
+    
+--     local str = ""
+        
+--     if tonumber(seconds) > 0 and tonumber(seconds) < 60 then
+--         str = ""..seconds.."秒" ..str
+--     end
+
+--     if tonumber(min - hour*60)>0 and tonumber(min - hour*60)<60 then
+--         str = ""..(min - hour*60).."分"..str
+--     end
+
+--     if tonumber(hour - day*24)>0 and tonumber(hour - day*60)<24 then
+--         str = (hour - day*24).."时"..str
+--     end
+    
+--     if tonumber(day) > 0 then
+--         str = day.."天"..str
+--     end
+
+--     return str
+-- end
+
+
+-- print (secondsToTime(28593))
+
+-- t = {1,2,3,4}
+
+
+-- table.sort(t,function(a,b)
+-- 	return a>b
+-- end)
+
+-- for k,v in pairs(t ) do
+-- 	print(k,v)
+-- end
+
+-- print(tonumber("dfdf"))
+
+-- if tonumber("g") <= 0 then
+-- 	--todo
+-- end
+
+-- print(10 * 3.66666 * 19)
+
+-- for i = 1,1,-1 do
+-- 	print(i)
+-- end
+
+
+-- -- 元类
+-- Rectangle = {area = 0, length = 0, breadth = 0}
+
+-- -- 派生类的方法 new
+-- function Rectangle:new (o,length,breadth)
+--   o = o or {}
+--   setmetatable(o, {__index = self})
+--   -- self.__index = self
+--   o.length = length or 0
+--   o.breadth = breadth or 0
+--   o.area = length*breadth;
+--   return o
+-- end
+
+-- -- 派生类的方法 printArea
+-- function Rectangle:printArea ()
+--   print("矩形面积为 ",self.area)
+-- end
+
+-- r = Rectangle:new(nil,10,20)
+-- r1 = Rectangle:new(nil,10,2000)
+
+-- -- r:printArea()
+-- -- r1:printArea() 
+
+-- local setmetatableindex_
+-- setmetatableindex_ = function(t, index)
+--     if type(t) == "userdata" then
+--         local peer = tolua.getpeer(t)
+--         if not peer then
+--             peer = {}
+--             tolua.setpeer(t, peer)
+--         end
+--         setmetatableindex_(peer, index)
+--     else
+--         local mt = getmetatable(t)
+--         print("mt =",mt)
+--         if not mt then mt = {} end
+--         if not mt.__index then
+--         	print("index=",index)
+--             mt.__index = index
+--             setmetatable(t, mt)
+--         elseif mt.__index ~= index then
+--             setmetatableindex_(mt, index)
+--         end
+--     end
+-- end
+-- setmetatableindex = setmetatableindex_
+
+
+-- function class(classname, ...)
+--     local cls = {__cname = classname}
+
+--     local supers = {...}
+--     for _, super in ipairs(supers) do
+--         local superType = type(super)
+--         assert(superType == "nil" or superType == "table" or superType == "function",
+--             string.format("class() - create class \"%s\" with invalid super class type \"%s\"",
+--                 classname, superType))
+
+--         if superType == "function" then
+--             assert(cls.__create == nil,
+--                 string.format("class() - create class \"%s\" with more than one creating function",
+--                     classname));
+--             -- if super is function, set it to __create
+--             cls.__create = super
+--         elseif superType == "table" then
+--             if super[".isclass"] then
+--                 -- super is native class
+--                 assert(cls.__create == nil,
+--                     string.format("class() - create class \"%s\" with more than one creating function or native class",
+--                         classname));
+--                 cls.__create = function() return super:create() end
+--             else
+--                 -- super is pure lua class
+--                 cls.__supers = cls.__supers or {}
+--                 cls.__supers[#cls.__supers + 1] = super
+--                 if not cls.super then
+--                     -- set first super pure lua class as class.super
+--                     cls.super = super
+--                 end
+--             end
+--         else
+--             error(string.format("class() - create class \"%s\" with invalid super type",
+--                         classname), 0)
+--         end
+--     end
+
+--     cls.__index = cls
+--     if not cls.__supers or #cls.__supers == 1 then
+--         setmetatable(cls, {__index = cls.super})
+--     else
+--         setmetatable(cls, {__index = function(_, key)
+--             local supers = cls.__supers
+--             for i = 1, #supers do
+--                 local super = supers[i]
+--                 if super[key] then return super[key] end
+--             end
+--         end})
+--     end
+
+--     if not cls.ctor then
+--         -- add default constructor
+--         cls.ctor = function() end
+--     end
+--     cls.new = function(...)
+--         local instance
+--         if cls.__create then
+--             instance = cls.__create(...)
+--         else
+--             instance = {}
+--         end
+--         print("cls=",cls)
+--         setmetatableindex(instance, cls)
+--         instance.class = cls
+--         if not instance.super then
+--             instance.super = getmetatable(instance)
+--         end
+--         instance:ctor(...)
+--         return instance
+--     end
+--     cls.create = function(_, ...)
+--         return cls.new(...)
+--     end
+
+--     return cls
+-- end
+
+-- NewYearGroupPurchaseController = class("NewYearGroupPurchaseController")
+-- print("NewYearGroupPurchaseController =",NewYearGroupPurchaseController)
+
+-- local newC = NewYearGroupPurchaseController.new()
+-- print("newC=",newC)
+
+-- x = tonumber(1)
+
+-- print(type(x))
+
+-- --c系同名数学函数
+-- function atoi(str)
+--     return tonumber(str) or 0
+-- end
+
+
+-- GOLDEXCHANGE_CURRENT_FIRSTCHARGR = "90004,90100,90002"--首充礼包id
+
+-- function isHaveNotBuyByFirstId(FirstId)
+-- 	print("FirstId=",FirstId)
+-- 	print(" atoi(FirstId) =", atoi(FirstId))
+--     local charge_vec = splitString(GOLDEXCHANGE_CURRENT_FIRSTCHARGR, ",")
+--     for i=1,#charge_vec do
+--         if atoi(charge_vec[i])  ==  atoi(FirstId) then
+--             return true
+--         end
+--     end
+--     return false
+-- end
+
+
+-- function splitString(src, deli)
+--     src = tostring(src)
+--     deli = tostring(deli)
+--     local len = string.len(src)
+--     if (deli=="") then return src end
+--     local pos,arr = 0, {}
+--     for st,sp in function() return string.find(src, deli, pos, true) end do
+--         table.insert(arr, string.sub(src, pos, st - 1))
+--         pos = sp + 1
+--     end
+--     if pos <= len and len ~= 0 then table.insert(arr, string.sub(src, pos)) end
+--     return arr
+-- end
+
+
+-- local charge_vec = splitString(GOLDEXCHANGE_FIRSTCHARGR, ",")
+
+-- print("i==",i)
+-- if isHaveNotBuyByFirstId(charge_vec[i]) == true then
+-- 	--todo
+-- 	print("isHaveNotBuyByFirstId")
+-- end
+
+
+-- local x = 100
+
+-- print(x / 100.0)
+
+
+-- local function create()
+-- 	local arg_table = {}
+-- 	local function dispatcher (...)
+-- 		local tbl = arg_table
+-- 		local n = select ("#",...)
+-- 		local last_match
+-- 		for i = 1,n do
+-- 			local t = type(select(i,...))
+-- 			local n = tbl[t]
+-- 			last_match = tbl["..."] or last_match
+-- 			if not n then
+-- 				return last_match (...)
+-- 			end
+-- 			tbl = n
+-- 		end
+-- 		return (tbl["__end"] or tbl["..."])(...)
+-- 	end
+-- 	local function register(desc,func)
+-- 		local tbl = arg_table
+-- 		for _,v in ipairs(desc) do
+-- 			if v=="..." then
+-- 				assert(not tbl["..."])
+-- 				tbl["..."] = func
+-- 				return
+-- 			end
+ 
+-- 			local n = tbl[v]
+-- 			if not n then
+-- 				n = {}
+-- 				tbl[v]=n
+-- 			end
+-- 			tbl = n
+-- 		end
+-- 		tbl["__end"] = func
+-- 	end
+-- 	return dispatcher, register, arg_table
+-- end
+ 
+-- local all={}
+ 
+-- local function register(env,desc,name)
+-- 	local func = desc[#desc]
+-- 	assert(type(func)=="function")
+-- 	desc[#desc] = nil
+ 
+-- 	local func_table
+-- 	if all[env] then
+-- 		func_table = all[env]
+-- 	else
+-- 		func_table = {}
+-- 		all[env] = func_table
+-- 	end
+ 
+-- 	if env[name] then
+-- 		assert(func_table[name])
+-- 	else
+-- 		env[name],func_table[name] = create()
+-- 	end
+ 
+-- 	func_table[name](desc,func)
+-- end
+ 
+-- define = setmetatable({},{
+-- 	__index = function (t,k)
+-- 		local function reg (desc)
+-- 			register(getfenv(2),desc,k)
+-- 		end
+-- 		t[k] = reg
+-- 		return reg
+-- 	end
+-- })
+
+-- for k,v in pairs(define) do
+-- 	print(k,v)
+-- end
+
+-- print("define.test =",define.test)
+
+-- define.test {
+-- 	"number",
+-- 	function(n)
+-- 		print("number",n)
+-- 	end
+-- }
+ 
+-- define.test {
+-- 	"string",
+-- 	"number",
+-- 	function(s,n)
+-- 		print("string number",s,n)
+-- 	end
+-- }
+ 
+-- define.test {
+-- 	"number",
+-- 	"...",
+-- 	function(n,...)
+-- 		print("number ...",n,...)
+-- 	end
+-- }
+ 
+-- define.test {
+-- 	"...",
+-- 	function(...)
+-- 		print("default",...)
+-- 	end
+-- }
+-- print("---------------------------") 
+-- test(1)
+-- test("hello",2)
+-- test("hello","world")
+-- test(1,"hello")
+
+-- repeat
+-- 	print("111")          
+-- until true
+
+
+-- local t = {}
+-- t.test{"number",
+-- 	"...",
+-- 	function(n,...)
+-- 		print("number ...",n,...)
+-- 	end}
+
+function foo (a)
+    print("foo 函数输出", a)
+    return coroutine.yield(2 * a) -- 返回  2*a 的值
 end
-
-
+ 
+co = coroutine.create(function (a , b)
+    print("第一次协同程序执行输出", a, b) -- co-body 1 10
+    local r = foo(a + 1)
+     
+    print("第二次协同程序执行输出", r)
+    local r, s = coroutine.yield(a + b, a - b)  -- a，b的值为第一次调用协同程序时传入
+     
+    print("第三次协同程序执行输出", r, s)
+    return b, "结束协同程序"                   -- b的值为第二次调用协同程序时传入
+end)
+       
+print("main", coroutine.resume(co, 1, 10)) -- true, 4
+print("--分割线----")
+print("main", coroutine.resume(co, "r")) -- true 11 -9
+print("---分割线---")
+print("main", coroutine.resume(co, "x", "y")) -- true 10 end
+print("---分割线---")
+print("main", coroutine.resume(co, "x", "y")) -- cannot resume dead coroutine
+print("---分割线---")
 

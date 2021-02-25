@@ -1,0 +1,16 @@
+ if(m_welfareOpenVec.size())
+        {
+            if(!GoldExchangeController::getInstance()->isAlreadyFirstPay()){ //没有首充
+                PopupViewController::getInstance()->addPopupInView(LuaHelper::createActivityViewPopup(m_welfareOpenVec[0]));
+            }else{
+                int index = 0;
+                std::vector<string> charge_vec;
+                CCCommonUtils::splitString(GOLDEXCHANGE_FIRSTCHARGR, ",", charge_vec);
+                for(int i = 0 ;i < m_welfareOpenVec.size();i++){
+                    if(m_welfareOpenVec.at(i).compare(charge_vec.at(0)) != 0){     //过滤90002
+                        index = i;
+                        break;
+                    }
+                }
+                PopupViewController::getInstance()->addPopupInView(LuaHelper::createActivityViewPopup(m_welfareOpenVec[index]));
+            }

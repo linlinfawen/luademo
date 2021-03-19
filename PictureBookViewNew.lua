@@ -93,6 +93,7 @@ function PictureBookView:initView()
     CCLoadSprite:doResourceByCommonIndex(1103, true, true)
     CCLoadSprite:doResourceByCommonIndex(1105, true, true)
     CCLoadSprite:doResourceByCommonIndex(1024, true, true)
+    CCLoadSprite:doResourceByCommonIndex(1229, true, true)
     CCLoadSprite:doResourceByPath("Common/HeroDetails.plist", true, true)
     CCLoadSprite:doResourceByPath("Common/SkinPNG.plist", true, true)
     CCLoadSprite:doResourceByCommonIndex(1111, true, true)
@@ -105,6 +106,7 @@ function PictureBookView:initView()
         CCLoadSprite:doResourceByPath("Common/SkinPNG.plist", false, true)
         CCLoadSprite:doResourceByCommonIndex(1024, false, true)
         CCLoadSprite:doResourceByCommonIndex(1111, false, true)
+        CCLoadSprite:doResourceByCommonIndex(1229, false, true)
         CCLoadSprite:doResourceByPath("Common/TowerEmbattle.plist", false, true)
     end)
     CCBLoadFile("IllustrationInterfaceNew", self, self)
@@ -359,103 +361,13 @@ function PictureBookView:tableCellAtIndex(tablePram, idx)
 
     print("skinInfos num=",idx,#skinInfos)
     if cell then
-        cell:setData(skinInfos,selectIndex)
+        cell:setData(skinInfos,selectIndex,self.m_type)
     else
-        cell = PictureBookCell:create(skinInfos,tablePram,selectIndex)
+        cell = PictureBookCell:create(skinInfos,tablePram,selectIndex,self.m_type,self)
         getmetatable(cell).__call = handler(self, PictureBookView.onCellBtnClick)
     end
     return cell
 end
-
--- function PictureBookView:tableCellAtIndex(tablePram, idx)
-    -- if self.m_type == mm.skinType.EM_Hero_Skin_Type then
-    --     if idx >= #self.m_heroPageVec then
-    --         return nil
-    --     end
-    --     local cell = tablePram:dequeueCell()
-    --     if idx < #self.m_heroPageVec then
-    --         local info = self.m_heroPageVec[idx+1]
-    --         if cell then
-    --             cell:setData(info)
-    --         else
-    --             cell = PictureBookTab:create()
-    --             cell:setData(info)
-    --         end
-    --         if idx == self.m_index then
-    --             cell:setCoverState()
-    --         end
-    --         cell:setInView(self.m_PBlistNode)
-    --         cell:setScale(0.85)
-
-    --         if GuideController:share():isInTutorial() and (info.m_heroSkinId == "1012015202" and info.m_skinType == 0) and not self.m_guideBookTab then
-    --             --图鉴引导处理
-    --             self.m_guideBookTab = cell
-    --         end
-    --     end
-    --     return cell
-    -- elseif self.m_type == mm.skinType.EM_Army_Skin_Type then
-    --     if idx >= #self.m_armyPageVec then
-    --         return nil
-    --     end
-    --     local cell = tablePram:dequeueCell()
-    --     if idx < #self.m_armyPageVec then
-    --         local info = self.m_armyPageVec[idx+1]
-    --         if cell then
-    --             cell:setData(info)
-    --         else
-    --             cell = PictureBookTab:create()
-    --             cell:setData(info)
-    --         end
-    --         if idx == self.m_index then
-    --             cell:setCoverState()
-    --         end
-    --         cell:setInView(self.m_listNode)
-    --         cell:setScale(0.85)
-    --     end
-    --     return cell
-    -- elseif self.m_type == mm.skinType.EM_Mecha_Skin_Type then
-    --     if idx >= #self.m_mechaPageVec then
-    --         return nil
-    --     end
-    --     local cell = tablePram:dequeueCell()
-    --     if idx < #self.m_mechaPageVec then
-    --         local info = self.m_mechaPageVec[idx+1]
-    --         if cell then
-    --             cell:setData(info)
-    --         else
-    --             cell = PictureBookTab:create()
-    --             cell:setData(info)
-    --         end
-    --         if idx == self.m_index then
-    --             cell:setCoverState()
-    --         end
-    --         cell:setInView(self.m_listNode)
-    --         cell:setScale(0.85)
-    --     end
-    --     return cell
-    -- elseif self.m_type == mm.skinType.EM_City_Skin_Type then
-    --     if idx >= #self.m_cityPageVec then
-    --         return nil
-    --     end
-    --     local cell = tablePram:dequeueCell()
-    --     if idx < #self.m_cityPageVec then
-    --         local info = self.m_cityPageVec[idx+1]
-    --         if cell then
-    --             cell:setData(info)
-    --         else
-    --             cell = PictureBookTab:create()
-    --             cell:setData(info)
-    --         end
-    --         if idx == self.m_index then
-    --             cell:setCoverState()
-    --         end
-    --         cell:setInView(self.m_listNode)
-    --         cell:setScale(0.85)
-    --     end
-    --     return cell
-    -- end
-    -- return nil
--- end
 
 function PictureBookView:numberOfCellsInTableView(tablePram)
     local num = 0
